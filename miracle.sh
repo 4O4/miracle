@@ -78,11 +78,11 @@ main() {
 				the_top="${form_application}_TOP"
 
 				if [[ ! -z "${i}" ]] && confirm "    - ${form_path} (language: ${form_language}, application: ${form_application})"; then
-					printf "\nInstalling ${form_path}...\n\n"
+					printf "\nInstalling ${form_path} (language: ${form_language}, application: ${form_application})...\n\n"
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
 					frmcmp_batch.sh module=${AU_TOP}/forms/${form_language}/${form_full_filename} userid=${username}/${password} output_file=${!the_top}/forms/${form_language}/${form_filename}.fmx module_type=form compile_all=special
-					printf "\nFinished installing ${form_path}\n\n"
+					printf "\nFinished installing ${form_path} (language: ${form_language}, application: ${form_application})\n\n"
 					
 					processed_elements=$((processed_elements + 1))
 				fi;
