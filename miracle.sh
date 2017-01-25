@@ -5,16 +5,16 @@
 # License: MIT
 # Home: https://github.com/4O4/miracle
 
-printf -- "--------------------------------------------------\n"
-printf -- " Miracle installer v0.1.0 by PK\n"
-printf -- "--------------------------------------------------\n\n"
-
 # Ugly globals
 processed_elements=0
 
 # Trapped magic
 main() {
 	trap 'set +x; error ${LINENO}' ERR
+
+	printf -- "--------------------------------------------------\n"
+	printf -- " Miracle installer v0.1.1 by PK\n"
+	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
 		printf "Missing username or password!\n\n"
