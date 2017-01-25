@@ -124,7 +124,7 @@ install_with_sqlplus() {
 	if [[ -z "$2" ]]; then return; fi;
 
 	if confirm "$1"; then
-		config_array=${!2}
+		config_array=("${!2}")
 
 		for i in "${config_array[@]}"
 		do
