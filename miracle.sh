@@ -148,7 +148,7 @@ error() {
 	local message="$2"
 	local code="${3:-1}"
 
-	echo -n -e "\n\n$(basename $0): \033[0;31m"
+	echo -n -e "\n\n$(basename ${BASH_SOURCE[0]}): \033[0;31m"
 	if [[ -n "$message" ]] ; then
 		echo "Error near line ${parent_lineno}: ${message}; exiting with status ${code}"
 	else
