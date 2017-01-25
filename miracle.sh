@@ -22,15 +22,15 @@ main() {
 	fi;
 
 	if [ ${#views[@]} -gt 0 ]; then
-		install_with_sqlplus "  Do you want to install SQL views?" "views"
+		install_with_sqlplus $'\n  Do you want to install SQL views?' views[@]
 	fi;
 
 	if [ ${#packages[@]} -gt 0 ]; then
-		install_with_sqlplus "  Do you want to install PL/SQL packages?" "packages"
+		install_with_sqlplus $'\n  Do you want to install PL/SQL packages?' packages[@]
 	fi;
 
 	if [ ${#ebs_functions[@]} -gt 0 ]; then
-		if confirm "  Do you want to import EBS functions?"; then
+		if confirm $'\n  Do you want to import EBS functions?'; then
 			for i in "${ebs_functions[@]}"
 			do
 				if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
@@ -45,7 +45,7 @@ main() {
 	fi;
 
 	if [ ${#forms_libraries[@]} -gt 0 ]; then
-		if confirm "  Do you want to install Forms PL/SQL libraries?"; then
+		if confirm $'\n  Do you want to install Forms PL/SQL libraries?'; then
 			for i in "${forms_libraries[@]}"
 			do
 				library_path=${i}
@@ -66,7 +66,7 @@ main() {
 
 
 	if [ ${#forms_modules[@]} -gt 0 ]; then
-		if confirm "  Do you want to install Forms modules?"; then
+		if confirm $'\n  Do you want to install Forms modules?'; then
 			for i in "${forms_modules[@]}"
 			do
 				metadata=${i%;*}
