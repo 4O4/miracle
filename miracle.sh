@@ -131,9 +131,11 @@ install_with_sqlplus() {
 			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
 				printf "\nInstalling ${i}...\n\n"
 				sqlplus -s ${username}/${password} <<-EOF
+					SET SQLBLANKLINES ON
 					WHENEVER SQLERROR EXIT FAILURE
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
+					;
 				EOF
 				printf "\nFinished installing ${i}\n\n"
 				
