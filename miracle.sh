@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.1.0 - prototype
+# Miracle installer v0.1.1 - prototype
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
