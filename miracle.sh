@@ -119,6 +119,8 @@ print_log_reminder() {
 }
 
 install_with_sqlplus() {
+	trap 'set +x; error ${LINENO}' ERR
+
 	if [[ -z "$2" ]]; then return; fi;
 
 	if confirm "$1"; then
