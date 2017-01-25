@@ -75,7 +75,7 @@ main() {
 				form_path=${i##*;}
 				form_full_filename=${i##*/}
 				form_filename=${form_full_filename%.*}
-				the_top="${form_language}_TOP"
+				the_top="${form_application}_TOP"
 
 				if [[ ! -z "${i}" ]] && confirm "    - ${form_path} (language: ${form_language}, application: ${form_application})"; then
 					printf "\nInstalling ${form_path}...\n\n"
