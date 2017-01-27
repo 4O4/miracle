@@ -30,18 +30,7 @@ main() {
 	fi;
 
 	if [ ${#ebs_functions[@]} -gt 0 ]; then
-		if confirm $'\n  Do you want to import EBS functions?'; then
-			for i in "${ebs_functions[@]}"
-			do
-				if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
-					printf "\nInstalling ${i}...\n\n"
-					FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/afsload.lct ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE WARNINGS=YES
-					printf "\nFinished installing ${i}\n\n"
-					
-					processed_elements=$((processed_elements + 1))
-				fi;
-			done
-		fi;
+		install_with_fndload $'\n  Do you want to import EBS functions?' "afsload.lct" ebs_functions[@]
 	fi;
 
 	if [ ${#forms_libraries[@]} -gt 0 ]; then
@@ -137,6 +126,27 @@ install_with_sqlplus() {
 					@${i}
 					;
 				EOF
+				printf "\nFinished installing ${i}\n\n"
+				
+				processed_elements=$((processed_elements + 1))
+			fi;
+		done
+	fi;
+}
+
+install_with_fndload() {
+	trap 'set +x; error ${LINENO}' ERR
+
+	if [[ -z "$3" ]]; then return; fi;
+
+	if confirm "$1"; then
+		config_array=("${!3}")
+
+		for i in "${config_array[@]}"
+		do
+			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+				printf "\nInstalling ${i}...\n\n"
+				FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${2} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE
 				printf "\nFinished installing ${i}\n\n"
 				
 				processed_elements=$((processed_elements + 1))
