@@ -33,6 +33,10 @@ main() {
 		install_with_fndload $'\n  Do you want to import EBS functions?' "afsload.lct" ebs_functions[@]
 	fi;
 
+	if [ ${#ebs_concurrent_programs[@]} -gt 0 ]; then
+		install_with_fndload $'\n  Do you want to import EBS concurrent programs?' "afcpprog.lct" ebs_concurrent_programs[@]
+	fi;
+
 	if [ ${#forms_libraries[@]} -gt 0 ]; then
 		if confirm $'\n  Do you want to install Forms PL/SQL libraries?'; then
 			for i in "${forms_libraries[@]}"
