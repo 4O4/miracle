@@ -125,6 +125,7 @@ install_with_sqlplus() {
 				printf "\nInstalling ${i}...\n\n"
 				sqlplus -s ${username}/${password} <<-EOF
 					SET SQLBLANKLINES ON
+					SET DEFINE OFF
 					WHENEVER SQLERROR EXIT FAILURE
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
