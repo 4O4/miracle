@@ -140,18 +140,49 @@ install_with_sqlplus() {
 }
 
 install_with_fndload() {
-	trap 'set +x; error ${LINENO}' ERR
+	# No trap here because FNDLOAD log files should always be cat'ed.
+	# Error must be raised manually.
 
 	if [[ -z "$3" ]]; then return; fi;
 
-	if confirm "$1"; then
-		config_array=("${!3}")
+	local prompt_text="$1"
+	local fndload_script_name="$2"
+	local config_array=("${!3}")
 
+	if confirm "${prompt_text}"; then
 		for i in "${config_array[@]}"
 		do
 			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
 				printf "\nInstalling ${i}...\n\n"
-				FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${2} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE
+				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
+
+				fndload_exit_code=$?
+
+				printf "${result}\n"
+				
+				log_file_name="$(echo ${result} | grep 'Log' | sed 's/Log filename : \(.*\.log\).*/\1/')"
+				report_file_name="$(echo ${result} | grep 'Report' | sed 's/.*Report filename : \(.*\.out\).*/\1/')"
+
+				printf "\n"
+
+				if [[ -f "${log_file_name}" ]]; then
+					cat "${log_file_name}"
+				else
+					printf "MIRACLE INFO: File '${log_file_name}' does not exist\n"
+				fi;
+
+				printf "\n"
+				
+				if [[ -f "${report_file_name}" ]]; then
+					cat "${report_file_name}"
+				else
+					printf "MIRACLE INFO: File '${report_file_name}' does not exist\n"
+				fi;
+				
+				if [[ ! ${fndload_exit_code} -eq 0 ]]; then
+					error ${LINENO}
+				fi;
+
 				printf "\nFinished installing ${i}\n\n"
 				
 				processed_elements=$((processed_elements + 1))
