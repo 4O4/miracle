@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.2.0 - prototype
+# Miracle installer v0.2.1
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
@@ -13,7 +13,7 @@ main() {
 	trap 'set +x; error ${LINENO}' ERR
 
 	printf -- "--------------------------------------------------\n"
-	printf -- " Miracle installer v0.2.0 by PK\n"
+	printf -- " Miracle installer v0.2.1 by PK\n"
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
