@@ -9,6 +9,7 @@ Configure file paths in global variables, then source `miracle.sh` and let it ta
 - PL/SQL Packages (.pkb, .pks)
 - Probably any other SQLplus-installable scripts
 - Oracle EBS functions (.ldt)
+- Oracle EBS concurrent programs (.ldt)
 - Oracle Forms libraries (.pll)
 - Oracle Forms modules (.fmb) 
 

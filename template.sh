@@ -21,10 +21,16 @@ ebs_functions=(
 
 )
 
+ebs_concurrent_programs=(
+	# Example:
+	# "PATH/TO/SCRIPT.ldt"
+
+)
+
 forms_libraries=(
 	# Example:
 	# "PATH/TO/LIBRARY.pll"
-	
+
 )
 
 forms_modules=(
