@@ -22,11 +22,11 @@ main() {
 	fi;
 
 	if [ ${#views[@]} -gt 0 ]; then
-		install_with_sqlplus $'\n  Do you want to install SQL views?' views[@]
+		install_with_sqlplus $'\n  Do you want to install SQL views?' views[@] ";"
 	fi;
 
 	if [ ${#packages[@]} -gt 0 ]; then
-		install_with_sqlplus $'\n  Do you want to install PL/SQL packages?' packages[@]
+		install_with_sqlplus $'\n  Do you want to install PL/SQL packages?' packages[@] "/"
 	fi;
 
 	if [ ${#ebs_functions[@]} -gt 0 ]; then
@@ -94,8 +94,10 @@ main() {
 }
 
 confirm() {
+	local prompt_text="$1"
+
     while true; do
-        read -p "$1 [y/N] " yn
+        read -p "${prompt_text} [y/N] " yn
         case $yn in
             [Yy] ) return 0;;
             * ) return 1;;
@@ -116,12 +118,25 @@ install_with_sqlplus() {
 
 	if [[ -z "$2" ]]; then return; fi;
 
+	local prompt_text="$1"
+	local config_array=("${!2}")
+	local command_terminator="$3"
+
 	if confirm "$1"; then
 		config_array=("${!2}")
 
 		for i in "${config_array[@]}"
 		do
 			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+				final_terminator="${command_terminator}"
+
+				# Avoid double command terminator
+				last_character="$(cat ${i} | dos2unix | tr -d "[:space:]" | tail -c 1)"
+
+				if [[ "${last_character}" = "${final_terminator}" ]]; then
+					final_terminator=""
+				fi;
+
 				printf "\nInstalling ${i}...\n\n"
 				sqlplus -s ${username}/${password} <<-EOF
 					SET SQLBLANKLINES ON
@@ -129,7 +144,7 @@ install_with_sqlplus() {
 					WHENEVER SQLERROR EXIT FAILURE
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
-					;
+					${final_terminator}
 				EOF
 				printf "\nFinished installing ${i}\n\n"
 				
