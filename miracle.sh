@@ -144,8 +144,10 @@ install_with_sqlplus() {
 
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result=$(sqlplus -s ${username}/${password} <<-EOF
+					SET TERMOUT ON
 					SET SQLBLANKLINES ON
 					SET DEFINE OFF
+					SET ECHO ON
 					WHENEVER SQLERROR EXIT FAILURE
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
