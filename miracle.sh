@@ -142,6 +142,10 @@ install_with_sqlplus() {
 					final_terminator=""
 				fi;
 
+				show_errors_cmd="$(cat ${i} | grep -i -E 'create.*(package|package body|view|procedure).*[i|a]s' | perl -pe 's/create.*(package body|package|view|procedure).*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?).*[i|a]s/show errors \1 \2;/gi')"
+ 
+				echo ${show_errors_cmd}
+
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result=$(sqlplus -s ${username}/${password} <<-EOF
 					SET TERMOUT ON
