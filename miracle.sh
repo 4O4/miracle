@@ -49,7 +49,7 @@ main() {
 				library_full_filename=${i##*/}
 				library_filename=${form_full_filename%.*}
 
-				if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 					cp -f ${library_path} ${AU_TOP}/resource
 					frmcmp_batch.sh module=${AU_TOP}/resource/${library_full_filename} userid=${username}/${password} output_file=${AU_TOP}/resource/${library_filename}.plx module_type=library compile_all=special
@@ -74,7 +74,7 @@ main() {
 				form_filename=${form_full_filename%.*}
 				the_top="${form_application}_TOP"
 
-				if [[ ! -z "${i}" ]] && confirm "    - ${form_path} (language: ${form_language}, application: ${form_application})"; then
+				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${form_path} (language: ${form_language}, application: ${form_application})\e[m"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${form_path} (language: ${form_language}, application: ${form_application})..."
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
@@ -132,7 +132,7 @@ install_with_sqlplus() {
 
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
 				final_terminator="${command_terminator}"
 
 				# Avoid double command terminator
@@ -173,7 +173,7 @@ install_with_fndload() {
 	if confirm "${prompt_text}"; then
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
 
