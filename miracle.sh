@@ -119,7 +119,7 @@ print_log_reminder() {
 }
 
 install_with_sqlplus() {
-	trap 'set +x; error ${LINENO}' ERR
+#	trap 'set +x; error ${LINENO}' ERR
 
 	if [[ -z "$2" ]]; then return; fi;
 
@@ -142,8 +142,8 @@ install_with_sqlplus() {
 					final_terminator=""
 				fi;
 
-				sqlplus -s ${username}/${password} <<-EOF
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
+				result=$(sqlplus -s ${username}/${password} <<-EOF
 					SET SQLBLANKLINES ON
 					SET DEFINE OFF
 					WHENEVER SQLERROR EXIT FAILURE
@@ -151,6 +151,14 @@ install_with_sqlplus() {
 					@${i}
 					${final_terminator}
 				EOF
+)
+				sqlplus_exit_code=$?
+
+				printf "${result}"
+
+				if [[ ! ${sqlplus_exit_code} -eq 0 ]]; then
+					error ${LINENO}
+				fi
 
 				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 				
