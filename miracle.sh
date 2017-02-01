@@ -96,13 +96,14 @@ main() {
 confirm() {
 	local prompt_text="$1"
 
-    while true; do
-        read -p "${prompt_text} [y/N] " yn
-        case $yn in
-            [Yy] ) return 0;;
-            * ) return 1;;
-        esac
-    done
+	while true; do
+		printf "${prompt_text}"
+		read -p " [y/N] " yn
+		case ${yn} in
+			[Yy] ) return 0;;
+			* ) return 1;;
+		esac
+	done
 }
 
 print_stats() {
