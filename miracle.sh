@@ -232,5 +232,5 @@ if [ -f "install.log" ]; then
 fi
 
 # Stdout + logging
-exec &> >(tee -a "install.log")
+exec &> >(tee -a >(sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' > "install.log"))
 main
