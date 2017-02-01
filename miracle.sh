@@ -50,7 +50,7 @@ main() {
 				library_filename=${form_full_filename%.*}
 
 				if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
-					printf "\nInstalling ${i}...\n\n"
+					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 					cp -f ${library_path} ${AU_TOP}/resource
 					frmcmp_batch.sh module=${AU_TOP}/resource/${library_full_filename} userid=${username}/${password} output_file=${AU_TOP}/resource/${library_filename}.plx module_type=library compile_all=special
 					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
@@ -75,7 +75,7 @@ main() {
 				the_top="${form_application}_TOP"
 
 				if [[ ! -z "${i}" ]] && confirm "    - ${form_path} (language: ${form_language}, application: ${form_application})"; then
-					printf "\nInstalling ${form_path} (language: ${form_language}, application: ${form_application})...\n\n"
+					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${form_path} (language: ${form_language}, application: ${form_application})..."
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
 					frmcmp_batch.sh module=${AU_TOP}/forms/${form_language}/${form_full_filename} userid=${username}/${password} output_file=${!the_top}/forms/${form_language}/${form_filename}.fmx module_type=form compile_all=special
@@ -142,8 +142,8 @@ install_with_sqlplus() {
 					final_terminator=""
 				fi;
 
-				printf "\nInstalling ${i}...\n\n"
 				sqlplus -s ${username}/${password} <<-EOF
+				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 					SET SQLBLANKLINES ON
 					SET DEFINE OFF
 					WHENEVER SQLERROR EXIT FAILURE
@@ -174,7 +174,7 @@ install_with_fndload() {
 		for i in "${config_array[@]}"
 		do
 			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
-				printf "\nInstalling ${i}...\n\n"
+				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
 
 				fndload_exit_code=$?
