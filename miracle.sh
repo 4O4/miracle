@@ -5,6 +5,10 @@
 # License: MIT
 # Home: https://github.com/4O4/miracle
 
+# Format strings
+readonly INSTALLATION_STARTED_FORMAT="\n\e[4;92m%s\e[m\n\n"
+readonly INSTALLATION_FINISHED_FORMAT="\n\e[4;92m%s\e[m\n\n"
+
 # Ugly globals
 processed_elements=0
 
@@ -49,7 +53,7 @@ main() {
 					printf "\nInstalling ${i}...\n\n"
 					cp -f ${library_path} ${AU_TOP}/resource
 					frmcmp_batch.sh module=${AU_TOP}/resource/${library_full_filename} userid=${username}/${password} output_file=${AU_TOP}/resource/${library_filename}.plx module_type=library compile_all=special
-					printf "\nFinished installing ${i}\n\n"
+					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 					
 					processed_elements=$((processed_elements + 1))
 				fi;
@@ -75,7 +79,7 @@ main() {
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
 					frmcmp_batch.sh module=${AU_TOP}/forms/${form_language}/${form_full_filename} userid=${username}/${password} output_file=${!the_top}/forms/${form_language}/${form_filename}.fmx module_type=form compile_all=special
-					printf "\nFinished installing ${form_path} (language: ${form_language}, application: ${form_application})\n\n"
+					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${form_path} (language: ${form_language}, application: ${form_application})"
 					
 					processed_elements=$((processed_elements + 1))
 				fi;
@@ -147,7 +151,8 @@ install_with_sqlplus() {
 					@${i}
 					${final_terminator}
 				EOF
-				printf "\nFinished installing ${i}\n\n"
+
+				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 				
 				processed_elements=$((processed_elements + 1))
 			fi;
@@ -199,7 +204,7 @@ install_with_fndload() {
 					error ${LINENO}
 				fi;
 
-				printf "\nFinished installing ${i}\n\n"
+				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 				
 				processed_elements=$((processed_elements + 1))
 			fi;
