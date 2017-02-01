@@ -156,13 +156,15 @@ install_with_sqlplus() {
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
 					${final_terminator}
+					show errors
+					${show_errors_cmd}
 				EOF
 )
 				sqlplus_exit_code=$?
 
 				printf "${result}"
 
-				if [[ ! ${sqlplus_exit_code} -eq 0 ]]; then
+				if [[ ! ${sqlplus_exit_code} -eq 0 ]] || [[ "${result}" == *"Errors for "* ]]; then
 					error ${LINENO}
 				fi
 
