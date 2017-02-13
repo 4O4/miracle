@@ -5,6 +5,10 @@
 # License: MIT
 # Home: https://github.com/4O4/miracle
 
+# Format strings
+readonly INSTALLATION_STARTED_FORMAT="\n\e[4;92m%s\e[m\n\n"
+readonly INSTALLATION_FINISHED_FORMAT="\n\e[4;92m%s\e[m\n\n"
+
 # Ugly globals
 processed_elements=0
 
@@ -45,11 +49,11 @@ main() {
 				library_full_filename=${i##*/}
 				library_filename=${form_full_filename%.*}
 
-				if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
-					printf "\nInstalling ${i}...\n\n"
+				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
+					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 					cp -f ${library_path} ${AU_TOP}/resource
 					frmcmp_batch.sh module=${AU_TOP}/resource/${library_full_filename} userid=${username}/${password} output_file=${AU_TOP}/resource/${library_filename}.plx module_type=library compile_all=special
-					printf "\nFinished installing ${i}\n\n"
+					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 					
 					processed_elements=$((processed_elements + 1))
 				fi;
@@ -70,12 +74,12 @@ main() {
 				form_filename=${form_full_filename%.*}
 				the_top="${form_application}_TOP"
 
-				if [[ ! -z "${i}" ]] && confirm "    - ${form_path} (language: ${form_language}, application: ${form_application})"; then
-					printf "\nInstalling ${form_path} (language: ${form_language}, application: ${form_application})...\n\n"
+				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${form_path} (language: ${form_language}, application: ${form_application})\e[m"; then
+					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${form_path} (language: ${form_language}, application: ${form_application})..."
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
 					frmcmp_batch.sh module=${AU_TOP}/forms/${form_language}/${form_full_filename} userid=${username}/${password} output_file=${!the_top}/forms/${form_language}/${form_filename}.fmx module_type=form compile_all=special
-					printf "\nFinished installing ${form_path} (language: ${form_language}, application: ${form_application})\n\n"
+					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${form_path} (language: ${form_language}, application: ${form_application})"
 					
 					processed_elements=$((processed_elements + 1))
 				fi;
@@ -96,13 +100,14 @@ main() {
 confirm() {
 	local prompt_text="$1"
 
-    while true; do
-        read -p "${prompt_text} [y/N] " yn
-        case $yn in
-            [Yy] ) return 0;;
-            * ) return 1;;
-        esac
-    done
+	while true; do
+		printf "${prompt_text}"
+		read -p " [y/N] " yn
+		case ${yn} in
+			[Yy] ) return 0;;
+			* ) return 1;;
+		esac
+	done
 }
 
 print_stats() {
@@ -114,7 +119,7 @@ print_log_reminder() {
 }
 
 install_with_sqlplus() {
-	trap 'set +x; error ${LINENO}' ERR
+#	trap 'set +x; error ${LINENO}' ERR
 
 	if [[ -z "$2" ]]; then return; fi;
 
@@ -127,7 +132,7 @@ install_with_sqlplus() {
 
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
+			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
 				final_terminator="${command_terminator}"
 
 				# Avoid double command terminator
@@ -137,16 +142,33 @@ install_with_sqlplus() {
 					final_terminator=""
 				fi;
 
-				printf "\nInstalling ${i}...\n\n"
-				sqlplus -s ${username}/${password} <<-EOF
+				show_errors_cmd="$(cat ${i} | grep -i -E 'create.*(package|package body|view|procedure).*[i|a]s' | perl -pe 's/create.*(package body|package|view|procedure).*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?).*[i|a]s/show errors \1 \2;/gi')"
+ 
+				echo ${show_errors_cmd}
+
+				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
+				result=$(sqlplus -s ${username}/${password} <<-EOF
+					SET TERMOUT ON
 					SET SQLBLANKLINES ON
 					SET DEFINE OFF
+					SET ECHO ON
 					WHENEVER SQLERROR EXIT FAILURE
 					WHENEVER OSERROR EXIT FAILURE
 					@${i}
 					${final_terminator}
+					show errors
+					${show_errors_cmd}
 				EOF
-				printf "\nFinished installing ${i}\n\n"
+)
+				sqlplus_exit_code=$?
+
+				printf "${result}"
+
+				if [[ ! ${sqlplus_exit_code} -eq 0 ]] || [[ "${result}" == *"Errors for "* ]]; then
+					error ${LINENO}
+				fi
+
+				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 				
 				processed_elements=$((processed_elements + 1))
 			fi;
@@ -167,8 +189,8 @@ install_with_fndload() {
 	if confirm "${prompt_text}"; then
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - ${i}"; then
-				printf "\nInstalling ${i}...\n\n"
+			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
+				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
 
 				fndload_exit_code=$?
@@ -198,7 +220,7 @@ install_with_fndload() {
 					error ${LINENO}
 				fi;
 
-				printf "\nFinished installing ${i}\n\n"
+				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
 				
 				processed_elements=$((processed_elements + 1))
 			fi;
@@ -231,5 +253,5 @@ if [ -f "install.log" ]; then
 fi
 
 # Stdout + logging
-exec &> >(tee -a "install.log")
+exec &> >(tee -a >(sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' > "install.log"))
 main
