@@ -17,7 +17,7 @@ main() {
 	trap 'set +x; error ${LINENO}' ERR
 
 	printf -- "--------------------------------------------------\n"
-	printf -- " Miracle installer v0.2.1 by PK\n"
+	printf -- " Miracle installer v0.2.2 by PK\n"
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
