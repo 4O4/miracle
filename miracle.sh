@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.2.1
+# Miracle installer v0.2.2
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
@@ -47,7 +47,7 @@ main() {
 			do
 				library_path=${i}
 				library_full_filename=${i##*/}
-				library_filename=${form_full_filename%.*}
+				library_filename=${library_full_filename%.*}
 
 				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
