@@ -8,6 +8,8 @@
 # Format strings
 readonly INSTALLATION_STARTED_FORMAT="\n\e[4;92m%s\e[m\n\n"
 readonly INSTALLATION_FINISHED_FORMAT="\n\e[4;92m%s\e[m\n\n"
+readonly CONFIRM_GROUP_FORMAT="\n  %s"
+readonly CONFIRM_ELEMENT_FORMAT="    - \e[96m%s\e[m"
 
 # Ugly globals
 processed_elements=0
@@ -26,30 +28,30 @@ main() {
 	fi;
 
 	if [ ${#views[@]} -gt 0 ]; then
-		install_with_sqlplus $'\n  Do you want to install SQL views?' views[@] ";"
+		install_with_sqlplus "${CONFIRM_GROUP_FORMAT} Do you want to install SQL views?" views[@] ";"
 	fi;
 
 	if [ ${#packages[@]} -gt 0 ]; then
-		install_with_sqlplus $'\n  Do you want to install PL/SQL packages?' packages[@] "/"
+		install_with_sqlplus "${CONFIRM_GROUP_FORMAT} Do you want to install PL/SQL packages?" packages[@] "/"
 	fi;
 
 	if [ ${#ebs_functions[@]} -gt 0 ]; then
-		install_with_fndload $'\n  Do you want to import EBS functions?' "afsload.lct" ebs_functions[@]
+		install_with_fndload "${CONFIRM_GROUP_FORMAT} Do you want to import EBS functions?" "afsload.lct" ebs_functions[@]
 	fi;
 
 	if [ ${#ebs_concurrent_programs[@]} -gt 0 ]; then
-		install_with_fndload $'\n  Do you want to import EBS concurrent programs?' "afcpprog.lct" ebs_concurrent_programs[@]
+		install_with_fndload "${CONFIRM_GROUP_FORMAT} Do you want to import EBS concurrent programs?" "afcpprog.lct" ebs_concurrent_programs[@]
 	fi;
 
 	if [ ${#forms_libraries[@]} -gt 0 ]; then
-		if confirm $'\n  Do you want to install Forms PL/SQL libraries?'; then
+		if confirm "${CONFIRM_GROUP_FORMAT} Do you want to install Forms PL/SQL libraries?"; then
 			for i in "${forms_libraries[@]}"
 			do
 				library_path=${i}
 				library_full_filename=${i##*/}
 				library_filename=${library_full_filename%.*}
 
-				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
+				if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${i}"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 					cp -f ${library_path} ${AU_TOP}/resource
 					frmcmp_batch.sh module=${AU_TOP}/resource/${library_full_filename} userid=${username}/${password} output_file=${AU_TOP}/resource/${library_filename}.plx module_type=library compile_all=special
@@ -63,7 +65,7 @@ main() {
 
 
 	if [ ${#forms_modules[@]} -gt 0 ]; then
-		if confirm $'\n  Do you want to install Forms modules?'; then
+		if confirm "${CONFIRM_GROUP_FORMAT} Do you want to install Forms modules?"; then
 			for i in "${forms_modules[@]}"
 			do
 				metadata=${i%;*}
@@ -74,7 +76,7 @@ main() {
 				form_filename=${form_full_filename%.*}
 				the_top="${form_application}_TOP"
 
-				if [[ ! -z "${i}" ]] && confirm "    - \e[96m${form_path} (language: ${form_language}, application: ${form_application})\e[m"; then
+				if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${form_path} (language: ${form_language}, application: ${form_application})"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${form_path} (language: ${form_language}, application: ${form_application})..."
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
@@ -98,10 +100,8 @@ main() {
 }
 
 confirm() {
-	local prompt_text="$1"
-
 	while true; do
-		printf "${prompt_text}"
+		printf "$@"
 		read -p " [y/N] " yn
 		case ${yn} in
 			[Yy] ) return 0;;
@@ -132,7 +132,7 @@ install_with_sqlplus() {
 
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
+			if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${i}"; then
 				final_terminator="${command_terminator}"
 
 				# Avoid double command terminator
@@ -189,7 +189,7 @@ install_with_fndload() {
 	if confirm "${prompt_text}"; then
 		for i in "${config_array[@]}"
 		do
-			if [[ ! -z "${i}" ]] && confirm "    - \e[96m${i}\e[m"; then
+			if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${i}"; then
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
 				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
 
