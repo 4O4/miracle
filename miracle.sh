@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.2.2
+# Miracle installer v0.3.0
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
@@ -19,7 +19,7 @@ main() {
 	trap 'set +x; error ${LINENO}' ERR
 
 	printf -- "--------------------------------------------------\n"
-	printf -- " Miracle installer v0.2.2 by PK\n"
+	printf -- " Miracle installer v0.3.0 by PK\n"
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
@@ -41,6 +41,10 @@ main() {
 
 	if [ ${#ebs_concurrent_programs[@]} -gt 0 ]; then
 		install_with_fndload "${CONFIRM_GROUP_FORMAT} Do you want to import EBS concurrent programs?" "afcpprog.lct" ebs_concurrent_programs[@]
+	fi;
+
+	if [ ${#ebs_messages[@]} -gt 0 ]; then
+		install_ebs_messages "${CONFIRM_GROUP_FORMAT} Do you want to import EBS messages?" ebs_messages[@]
 	fi;
 
 	if [ ${#forms_libraries[@]} -gt 0 ]; then
@@ -176,6 +180,41 @@ install_with_sqlplus() {
 	fi;
 }
 
+run_fnd_command_verbose() {
+	if [[ -z "$1" ]]; then return; fi;
+
+	local cmd="$@"
+
+	result="$(${cmd} 2>&1)"
+
+	cmd_exit_code=$?
+
+	printf "${result}\n"
+	
+	log_file_name="$(echo ${result} | grep 'Log' | sed 's/Log filename : \(.*\.log\).*/\1/')"
+	report_file_name="$(echo ${result} | grep 'Report' | sed 's/.*Report filename : \(.*\.out\).*/\1/')"
+
+	printf "\n"
+
+	if [[ -f "${log_file_name}" ]]; then
+		cat "${log_file_name}"
+	else
+		printf "MIRACLE INFO: File '${log_file_name}' does not exist\n"
+	fi;
+
+	printf "\n"
+	
+	if [[ -f "${report_file_name}" ]]; then
+		cat "${report_file_name}"
+	else
+		printf "MIRACLE INFO: File '${report_file_name}' does not exist\n"
+	fi;
+	
+	if [[ ! ${cmd_exit_code} -eq 0 ]]; then
+		error ${LINENO}
+	fi;
+}
+
 install_with_fndload() {
 	# No trap here because FNDLOAD log files should always be cat'ed.
 	# Error must be raised manually.
@@ -191,36 +230,46 @@ install_with_fndload() {
 		do
 			if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${i}"; then
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
-				result="$(FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE 2>&1)"
-
-				fndload_exit_code=$?
-
-				printf "${result}\n"
 				
-				log_file_name="$(echo ${result} | grep 'Log' | sed 's/Log filename : \(.*\.log\).*/\1/')"
-				report_file_name="$(echo ${result} | grep 'Report' | sed 's/.*Report filename : \(.*\.out\).*/\1/')"
-
-				printf "\n"
-
-				if [[ -f "${log_file_name}" ]]; then
-					cat "${log_file_name}"
-				else
-					printf "MIRACLE INFO: File '${log_file_name}' does not exist\n"
-				fi;
-
-				printf "\n"
-				
-				if [[ -f "${report_file_name}" ]]; then
-					cat "${report_file_name}"
-				else
-					printf "MIRACLE INFO: File '${report_file_name}' does not exist\n"
-				fi;
-				
-				if [[ ! ${fndload_exit_code} -eq 0 ]]; then
-					error ${LINENO}
-				fi;
+				run_fnd_command_verbose \
+				"FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/${fndload_script_name} ${i} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE"
 
 				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${i}"
+				
+				processed_elements=$((processed_elements + 1))
+			fi;
+		done
+	fi;
+}
+
+install_ebs_messages() {
+	if [[ -z "$2" ]]; then return; fi;
+
+	local prompt_text="$1"
+	local config_array=("${!2}")
+
+	if confirm "${prompt_text}"; then
+		for i in "${config_array[@]}"
+		do
+			metadata=${i%;*}
+			language=${metadata%;*}
+			application=${metadata##*;}
+			messages_file_path=${i##*;}
+
+			if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${messages_file_path} (language: ${language}, application: ${application})"; then
+				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${messages_file_path} (language: ${language}, application: ${application})..."
+				
+				run_fnd_command_verbose \
+				"FNDLOAD ${username}/${password} 0 Y UPLOAD ${FND_TOP}/patch/115/import/afmdmsg.lct ${messages_file_path} UPLOAD_MODE=REPLACE CUSTOM_MODE=FORCE"
+
+				printf "\n"
+
+				printf "${INSTALLATION_STARTED_FORMAT}" "Generating messages (DB to Runtime)..."
+
+				run_fnd_command_verbose \
+				"FNDMDGEN ${username}/${password} 0 Y ${language} ${application} DB_TO_RUNTIME"
+
+				printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${messages_file_path} (language: ${language}, application: ${application})"
 				
 				processed_elements=$((processed_elements + 1))
 			fi;
