@@ -27,10 +27,16 @@ ebs_concurrent_programs=(
 
 )
 
+ebs_profiles=(
+	# Example:
+	# "PATH/TO/SCRIPT.ldt"
+
+)
+
 ebs_messages=(
 	# Example:
 	# "LANG_CODE;ORACLE_APPLICATION_SHORTNAME;PATH/TO/SCRIPT.ldt"
-	
+
 )
 
 forms_libraries=(

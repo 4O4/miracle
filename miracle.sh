@@ -43,6 +43,10 @@ main() {
 		install_with_fndload "${CONFIRM_GROUP_FORMAT} Do you want to import EBS concurrent programs?" "afcpprog.lct" ebs_concurrent_programs[@]
 	fi;
 
+	if [ ${#ebs_profiles[@]} -gt 0 ]; then
+		install_with_fndload "${CONFIRM_GROUP_FORMAT} Do you want to import EBS profiles?" "afscprof.lct" ebs_profiles[@]
+	fi;
+
 	if [ ${#ebs_messages[@]} -gt 0 ]; then
 		install_ebs_messages "${CONFIRM_GROUP_FORMAT} Do you want to import EBS messages?" ebs_messages[@]
 	fi;
