@@ -80,7 +80,7 @@ main() {
 				form_filename=${form_full_filename%.*}
 				the_top="${form_application}_TOP"
 
-				if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${form_path} (language: ${form_language}, application: ${form_application})"; then
+				if [[ ! -z "${form_path}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${form_path} (language: ${form_language}, application: ${form_application})"; then
 					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${form_path} (language: ${form_language}, application: ${form_application})..."
 					cp -f ${form_path} ${AU_TOP}/forms/${form_language}
 					env FORMS_PATH="${FORMS_PATH}:${AU_TOP}/forms/${form_language}" \
@@ -256,7 +256,7 @@ install_ebs_messages() {
 			application=${metadata##*;}
 			messages_file_path=${i##*;}
 
-			if [[ ! -z "${i}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${messages_file_path} (language: ${language}, application: ${application})"; then
+			if [[ ! -z "${messages_file_path}" ]] && confirm "${CONFIRM_ELEMENT_FORMAT}" "${messages_file_path} (language: ${language}, application: ${application})"; then
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${messages_file_path} (language: ${language}, application: ${application})..."
 				
 				run_fnd_command_verbose \
