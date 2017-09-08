@@ -4,6 +4,11 @@ Interactive installer for Oracle E-Business Suite custom stuff. Simple, sourcabl
 ## Usage
 Configure file paths in global variables, then source `miracle.sh` and let it take care of the rest. Ready-to-use template is available in `template.sh`.
 
+## Features
+- Sophisticated error handling
+- Logging (with log rotation)
+- Support for custom installation commands (eg. running build tools, filesystem operations)
+
 ## Supported files
 - SQL Views (.sql)
 - PL/SQL Packages (.pkb, .pks)

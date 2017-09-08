@@ -51,4 +51,10 @@ forms_modules=(
 
 )
 
+custom=(
+	# Example:
+	# "Group name;Element name (can be empty if group name is unique);shell commands"
+
+)
+
 source "miracle.sh"

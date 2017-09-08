@@ -97,6 +97,10 @@ main() {
 		fi;
 	fi;
 
+	if [ ${#custom[@]} -gt 0 ]; then
+		install_custom_resources custom[@]
+	fi;
+
 	if [ "${processed_elements}" -gt 0 ]; then
 		print_stats
 		print_log_reminder
@@ -279,6 +283,71 @@ install_ebs_messages() {
 			fi;
 		done
 	fi;
+}
+
+install_custom_resources() {
+	if [[ -z "$1" ]]; then return; fi;
+
+	local config_array=("${!1}")
+	local last_group_name=""
+	local last_group_confirmed=1
+
+	for i in "${config_array[@]}"
+	do
+		group_name=${i%%;*}
+		group_name=$(trim "${group_name}")
+		rest=${i#*;}
+		element_name=${rest%%;*}
+		element_name=$(trim "${element_name}")
+		commands=${rest#*;}
+
+		if [[ ! -z "${commands}" ]] && [[ ! -z "${group_name}" ]]; then
+			if [ "${last_group_name}" == "${group_name}" ]; then
+				if [[ ${last_group_confirmed} -eq 0 ]]; then
+					confirmed_group=0
+				fi;
+			else
+				confirm "${CONFIRM_GROUP_FORMAT}" "Do you want to install ${group_name}?"
+				confirmed_group=$?
+			fi;
+
+			last_group_name="${group_name}"
+			last_group_confirmed=${confirmed_group}
+
+			if [[ ${confirmed_group} -eq 0 ]]; then
+				if [[ ${#config_array[@]} -eq 1 ]] && [[ -z "${element_name}" ]]; then
+					confirmed_element=0
+				else
+					confirm "${CONFIRM_ELEMENT_FORMAT}" "${element_name}"
+					confirmed_element=$?
+				fi;
+
+				if [[ ${confirmed_element} -eq 0 ]]; then
+					printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${group_name}${element_name:+ -> ${element_name}}..."
+
+					printf "MIRACLE INFO: Commands to execute: ${commands}\n\n"
+					
+					result="$(${commands} 2>&1)"
+
+					cmd_exit_code=$?
+
+					printf "${result}\n"
+					
+					if [[ ! ${cmd_exit_code} -eq 0 ]]; then
+						error ${LINENO}
+					fi;
+
+					printf "${INSTALLATION_FINISHED_FORMAT}" "Finished installing ${element_name:-${group_name}}"
+					
+					processed_elements=$((processed_elements + 1))
+				fi;
+			fi;
+		fi;
+	done
+}
+
+trim() {
+	echo "$@" | xargs
 }
 
 error() {
