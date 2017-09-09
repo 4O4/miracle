@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.4.1
+# Miracle installer v0.4.2
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
@@ -19,7 +19,7 @@ main() {
 	trap 'set +x; error ${LINENO}' ERR
 
 	printf -- "--------------------------------------------------\n"
-	printf -- " Miracle installer v0.4.1 by PK\n"
+	printf -- " Miracle installer v0.4.2 by PK\n"
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
@@ -154,7 +154,7 @@ install_with_sqlplus() {
 					final_terminator=""
 				fi;
 
-				show_errors_cmd="$(cat ${i} | remove_newline | grep -Pio 'create.*?(package|package body|view|procedure).*?[i|a]s' | perl -pe 's/create.*?(package body|package|view|procedure).*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?).*?[i|a]s/show errors \1 \2;/gi' | tr -d "\"")"
+				show_errors_cmd="$(cat ${i} | remove_newline | grep -Pio 'create .*?(package|package body|view|procedure) .*?[i|a]s ' | perl -pe 's/create .*?(package body|package|view|procedure) .*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?) .*?[i|a]s /show errors \1 \2;/gi' | tr -d "\"")"
  
 				printf "MIRACLE INFO: show_errors_cmd: ${show_errors_cmd}\n\n"
 
