@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Miracle installer v0.4.0
+# Miracle installer v0.4.1
 # Copyright (c) 2017 Paweł Kierzkowski
 # License: MIT
 # Home: https://github.com/4O4/miracle
@@ -19,7 +19,7 @@ main() {
 	trap 'set +x; error ${LINENO}' ERR
 
 	printf -- "--------------------------------------------------\n"
-	printf -- " Miracle installer v0.4.0 by PK\n"
+	printf -- " Miracle installer v0.4.1 by PK\n"
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
@@ -148,13 +148,13 @@ install_with_sqlplus() {
 				final_terminator="${command_terminator}"
 
 				# Avoid double command terminator
-				last_character="$(cat ${i} | dos2unix | tr -d "[:space:]" | tail -c 1)"
+				last_character="$(cat ${i} | remove_whitespace | tail -c 1)"
 
 				if [[ "${last_character}" = "${final_terminator}" ]]; then
 					final_terminator=""
 				fi;
 
-				show_errors_cmd="$(cat ${i} | grep -i -E 'create.*(package|package body|view|procedure).*[i|a]s' | perl -pe 's/create.*(package body|package|view|procedure).*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?).*[i|a]s/show errors \1 \2;/gi')"
+				show_errors_cmd="$(cat ${i} | remove_newline | grep -Pio 'create.*?(package|package body|view|procedure).*?[i|a]s' | perl -pe 's/create.*?(package body|package|view|procedure).*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?).*?[i|a]s/show errors \1 \2;/gi' | tr -d "\"")"
  
 				printf "MIRACLE INFO: show_errors_cmd: ${show_errors_cmd}\n\n"
 
@@ -348,6 +348,14 @@ install_custom_resources() {
 
 trim() {
 	echo "$@" | xargs
+}
+
+remove_whitespace() {
+	dos2unix | tr -d "[:space:]"
+}
+
+remove_newline() {
+	dos2unix | tr "\n" " "
 }
 
 error() {
