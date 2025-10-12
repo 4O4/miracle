@@ -23,8 +23,8 @@ main() {
 	printf -- "--------------------------------------------------\n"
 
 	if [[ -z ${username} ]] || [[ -z ${password} ]]; then
-		printf "Missing username or password!\n\n"
-		return;
+		# Fail fast with a non-zero exit to avoid continuing silently
+		error ${LINENO} "Missing username or password!" 2
 	fi;
 
 	if [ ${#views[@]} -gt 0 ]; then
@@ -148,18 +148,20 @@ install_with_sqlplus() {
 				final_terminator="${command_terminator}"
 
 				# Avoid double command terminator
-				last_character="$(cat ${i} | remove_whitespace | tail -c 1)"
+				last_character="$(cat "${i}" | remove_whitespace | tail -c 1)"
 
 				if [[ "${last_character}" = "${final_terminator}" ]]; then
 					final_terminator=""
 				fi;
 
-				show_errors_cmd="$(cat ${i} | remove_newline | grep -Pio 'create .*?(package|package body|view|procedure) .*?[i|a]s ' | perl -pe 's/create .*?(package body|package|view|procedure) .*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?) .*?[i|a]s /show errors \1 \2;/gi' | tr -d "\"")"
+				show_errors_cmd="$(cat "${i}" | remove_newline | grep -Pio 'create .*?(package|package body|view|procedure) .*?(?:is|as) ' | perl -pe 's/create .*?(package body|package|view|procedure) .*?((["]?[a-z]{1,20}["]?\.)?["]?[a-zA-Z0-9_]{1,30}["]?) .*?(?:is|as) /show errors \1 \2;/gi' | tr -d "\"")"
  
 				printf "MIRACLE INFO: show_errors_cmd: ${show_errors_cmd}\n\n"
 
 				printf "${INSTALLATION_STARTED_FORMAT}" "Installing ${i}..."
-				result=$(sqlplus -s ${username}/${password} <<-EOF
+				# Avoid exposing credentials in process list: connect within SQL*Plus session
+				result=$(sqlplus -s /nolog <<-EOF
+					CONNECT ${username}/${password}
 					SET TERMOUT ON
 					SET SQLBLANKLINES ON
 					SET DEFINE OFF
@@ -171,10 +173,10 @@ install_with_sqlplus() {
 					show errors
 					${show_errors_cmd}
 				EOF
-)
+			)
 				sqlplus_exit_code=$?
 
-				printf "${result}"
+				printf "%s" "${result}"
 
 				if [[ ! ${sqlplus_exit_code} -eq 0 ]] || [[ "${result}" == *"Errors for "* ]]; then
 					error ${LINENO}
